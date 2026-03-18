@@ -10,6 +10,7 @@ const StickyNav = () => {
     { id: "about", label: t.nav.about[lang] },
     { id: "locations", label: t.nav.locations[lang] },
     { id: "gallery", label: t.nav.gallery[lang] },
+    { id: "video", label: t.nav.video[lang] },
     { id: "products", label: t.nav.products[lang] },
     { id: "feedback", label: t.nav.feedback[lang] },
   ];

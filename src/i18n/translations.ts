@@ -6,6 +6,7 @@ export const translations = {
     about: { cs: "O roadshow", en: "About" },
     locations: { cs: "Místa", en: "Locations" },
     gallery: { cs: "Galerie", en: "Gallery" },
+    video: { cs: "Video", en: "Video" },
     products: { cs: "Produkty", en: "Products" },
     feedback: { cs: "Kontakt", en: "Contact" },
   },

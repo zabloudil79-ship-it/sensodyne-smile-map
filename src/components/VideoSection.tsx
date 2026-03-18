@@ -1,6 +1,6 @@
 const VideoSection = () => {
   return (
-    <section className="relative py-24 md:py-32 overflow-hidden bg-secondary">
+    <section id="video" className="relative py-24 md:py-32 overflow-hidden bg-secondary">
       <div className="container max-w-6xl mx-auto px-4">
         <div className="text-center mb-14">
           <span className="inline-block px-4 py-1.5 rounded-full bg-secondary-foreground/10 text-secondary-foreground text-sm font-semibold font-body mb-4">
