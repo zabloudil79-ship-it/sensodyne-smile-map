@@ -183,6 +183,7 @@ const MapSection = () => {
           <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
             {cityPoints.map((point) => {
               const isSelected = selectedCity === point.city;
+              const isHovered = hoveredCity === point.city;
               return (
                 <g
                   key={point.city}
