@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import sensodyneLogo from "@/assets/sensodyne-logo.jpg";
 
 const HeroSection = () => {
   const scrollToContent = () => {
@@ -19,6 +20,11 @@ const HeroSection = () => {
       </video>
       <div className="absolute inset-0 bg-primary/40" />
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
+        <img
+          src={sensodyneLogo}
+          alt="Sensodyne Clinical White"
+          className="mb-6 h-16 w-auto rounded-lg bg-primary-foreground p-2 sm:h-20"
+        />
         <h1 className="font-display text-3xl font-black leading-tight tracking-tight text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl">
           Roadshow, která se Vám
           <br />
