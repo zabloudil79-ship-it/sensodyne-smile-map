@@ -166,7 +166,7 @@ const FeedbackSection = () => {
               {errors.message && <p className="mt-1.5 font-body text-sm text-destructive">{errors.message}</p>}
             </div>
 
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex justify-center">
               <button
                 type="submit"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-xl gradient-primary px-8 font-body text-sm font-semibold text-primary-foreground transition-all duration-300 hover:opacity-90 hover:shadow-elegant"
