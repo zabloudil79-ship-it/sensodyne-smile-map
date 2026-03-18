@@ -33,16 +33,6 @@ const initialData: FormData = {
   consentMarketing: false,
 };
 
-type FormData = z.infer<typeof feedbackSchema>;
-
-const initialData: FormData = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  phone: "",
-  message: "",
-};
-
 const inputClass =
   "h-12 w-full rounded-xl border border-input bg-background px-4 font-body text-foreground outline-none ring-offset-background transition-all duration-300 focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/30";
 
@@ -51,7 +41,7 @@ const FeedbackSection = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleChange = (field: keyof FormData, value: string) => {
+  const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
     if (isSubmitted) setIsSubmitted(false);
@@ -68,6 +58,7 @@ const FeedbackSection = () => {
         email: fieldErrors.email?.[0],
         phone: fieldErrors.phone?.[0],
         message: fieldErrors.message?.[0],
+        consentData: fieldErrors.consentData?.[0],
       });
       return;
     }
