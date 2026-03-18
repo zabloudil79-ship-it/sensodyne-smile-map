@@ -95,10 +95,17 @@ const allEvents: EventData[] = [
 ];
 
 const CR_BOUNDS = {
-  minLat: 48.5,
-  maxLat: 51.1,
-  minLng: 12.0,
-  maxLng: 18.9,
+  minLat: 48.52,
+  maxLat: 51.06,
+  minLng: 12.09,
+  maxLng: 18.89,
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const mercatorY = (lat: number) => {
+  const rad = (lat * Math.PI) / 180;
+  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
 };
 
 const MapSection = () => {
@@ -117,13 +124,16 @@ const MapSection = () => {
       return acc;
     }, {});
 
+    const maxLatMerc = mercatorY(CR_BOUNDS.maxLat);
+    const minLatMerc = mercatorY(CR_BOUNDS.minLat);
+
     return Object.entries(grouped)
       .map(([city, events]) => {
         const coords = cityCoordinates[city];
         if (!coords) return null;
 
-        const x = ((coords.lng - CR_BOUNDS.minLng) / (CR_BOUNDS.maxLng - CR_BOUNDS.minLng)) * 100;
-        const y = ((CR_BOUNDS.maxLat - coords.lat) / (CR_BOUNDS.maxLat - CR_BOUNDS.minLat)) * 100;
+        const x = clamp(((coords.lng - CR_BOUNDS.minLng) / (CR_BOUNDS.maxLng - CR_BOUNDS.minLng)) * 100, 1.5, 98.5);
+        const y = clamp(((maxLatMerc - mercatorY(coords.lat)) / (maxLatMerc - minLatMerc)) * 100, 2, 98);
 
         return { city, events, x, y };
       })
@@ -133,36 +143,7 @@ const MapSection = () => {
   const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
 
   return (
-    <section id="locations" className="bg-background py-20 md:py-28">
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="mb-8 text-center">
-          <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-4xl">Přijeďte za námi</h2>
-          <p className="mx-auto max-w-2xl font-body text-lg text-muted-foreground">
-            Klikněte na tečku ve městě a zobrazí se lokalita, termín i čas roadshow.
-          </p>
-        </div>
-
-        <div className="mb-6 flex flex-wrap justify-center gap-3">
-          {[
-            { key: "all", label: "Vše" },
-            { key: "duben", label: "Duben" },
-            { key: "květen", label: "Květen" },
-          ].map((item) => (
-            <button
-              key={item.key}
-              onClick={() => {
-                setFilter(item.key as MonthFilter);
-                setSelectedCity(null);
-              }}
-              className={`rounded-full px-5 py-2 font-body text-sm font-semibold transition ${
-                filter === item.key ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-accent"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
+...
         <div className="relative overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
           <iframe
             title="Google mapa České republiky"
@@ -171,7 +152,7 @@ const MapSection = () => {
             loading="lazy"
             className="absolute inset-0"
             style={{ border: 0 }}
-            src="https://maps.google.com/maps?q=Czech%20Republic&t=&z=7&ie=UTF8&iwloc=&output=embed"
+            src="https://maps.google.com/maps?hl=cs&ll=49.8175,15.4730&z=7&t=m&output=embed"
           />
 
           <div className="absolute inset-0">
