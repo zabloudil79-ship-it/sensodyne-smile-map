@@ -5,6 +5,7 @@ import MapSection from "@/components/MapSection";
 import GallerySection from "@/components/GallerySection";
 
 import ProductsSection from "@/components/ProductsSection";
+import VideoSection from "@/components/VideoSection";
 import FeedbackSection from "@/components/FeedbackSection";
 import Footer from "@/components/Footer";
 import StickyNav from "@/components/StickyNav";
@@ -18,6 +19,7 @@ const Index = () => {
       <FeaturesSection />
       <MapSection />
       <GallerySection />
+      <VideoSection />
       
       <ProductsSection />
       <FeedbackSection />
