@@ -109,6 +109,7 @@ const latToSvgY = (lat: number) =>
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   const { lang, t } = useLanguage();
 
   const filterButtons = [
