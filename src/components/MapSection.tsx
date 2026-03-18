@@ -109,6 +109,7 @@ const latToSvgY = (lat: number) =>
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [hoveredCity, setHoveredCity] = useState<string | null>(null);
   const { lang, t } = useLanguage();
 
   const filterButtons = [
@@ -182,8 +183,16 @@ const MapSection = () => {
           <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
             {cityPoints.map((point) => {
               const isSelected = selectedCity === point.city;
+              const isHovered = hoveredCity === point.city;
               return (
-                <g key={point.city} onClick={() => setSelectedCity(point.city)} className="cursor-pointer">
+                <g
+                  key={point.city}
+                  onClick={() => setSelectedCity(point.city)}
+                  onMouseEnter={() => setHoveredCity(point.city)}
+                  onMouseLeave={() => setHoveredCity(null)}
+                  className="cursor-pointer"
+                  style={{ transition: "transform 0.3s" }}
+                >
                   <circle cx={point.x} cy={point.y} r="14" fill="transparent" />
                   {isSelected && (
                     <circle cx={point.x} cy={point.y} r="10" className="fill-primary/10">
@@ -191,20 +200,24 @@ const MapSection = () => {
                       <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite" />
                     </circle>
                   )}
+                  {isHovered && !isSelected && (
+                    <circle cx={point.x} cy={point.y} r="8" className="fill-secondary/15" />
+                  )}
                   <circle
                     cx={point.x}
                     cy={point.y}
-                    r={isSelected ? 5 : 3.5}
-                    className={isSelected ? "fill-primary" : "fill-secondary"}
-                    style={{ transition: "r 0.3s, fill 0.3s" }}
+                    r={isSelected ? 5 : isHovered ? 5 : 3.5}
+                    className={isSelected ? "fill-primary" : isHovered ? "fill-primary" : "fill-secondary"}
+                    style={{ transition: "r 0.2s ease, fill 0.2s ease" }}
                   />
                   <text
                     x={point.x}
-                    y={point.y - 10}
+                    y={point.y - (isHovered || isSelected ? 12 : 10)}
                     textAnchor="middle"
                     className="fill-foreground font-body"
-                    fontSize="8.5"
-                    fontWeight={isSelected ? "700" : "500"}
+                    fontSize={isHovered || isSelected ? "9.5" : "8.5"}
+                    fontWeight={isHovered || isSelected ? "700" : "500"}
+                    style={{ transition: "font-size 0.2s ease" }}
                   >
                     {point.city}
                   </text>
