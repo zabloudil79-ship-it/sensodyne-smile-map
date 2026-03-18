@@ -94,28 +94,43 @@ const allEvents: EventData[] = [
   { month: "květen", city: "Kadaň", location: "RP S1 Center", date: "24.05.2026", time: "ne (10-18)" },
 ];
 
-const CR_BOUNDS = {
-  minLat: 48.52,
-  maxLat: 51.06,
-  minLng: 12.09,
-  maxLng: 18.89,
-};
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const mercatorY = (lat: number) => {
-  const rad = (lat * Math.PI) / 180;
-  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
-};
-
 const DEFAULT_CENTER = { lat: 49.8175, lng: 15.473 };
 const DEFAULT_ZOOM = 7.28;
+
+// Google Maps Web Mercator projection helpers
+const lngToX = (lng: number, zoom: number) => {
+  const worldSize = 256 * Math.pow(2, zoom);
+  return ((lng + 180) / 360) * worldSize;
+};
+
+const latToY = (lat: number, zoom: number) => {
+  const worldSize = 256 * Math.pow(2, zoom);
+  const latRad = (lat * Math.PI) / 180;
+  const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+  return (1 - mercN / Math.PI) / 2 * worldSize;
+};
+
+const MAP_WIDTH = 800; // reference iframe width
+const MAP_HEIGHT = 560; // reference iframe height
 
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [center, setCenter] = useState(DEFAULT_CENTER);
+  const [mapDimensions, setMapDimensions] = useState({ width: MAP_WIDTH, height: MAP_HEIGHT });
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = mapRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      if (width > 0 && height > 0) setMapDimensions({ width, height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const handleZoomIn = () => setZoom((z) => Math.min(z + 0.25, 12));
   const handleZoomOut = () => setZoom((z) => Math.max(z - 0.25, 5));
@@ -132,28 +147,27 @@ const MapSection = () => {
       return acc;
     }, {});
 
-    const scale = Math.pow(2, zoom - DEFAULT_ZOOM);
-    const lngSpan = (CR_BOUNDS.maxLng - CR_BOUNDS.minLng) / scale;
-    const latSpan = (CR_BOUNDS.maxLat - CR_BOUNDS.minLat) / scale;
-    const visMinLng = center.lng - lngSpan / 2;
-    const visMaxLng = center.lng + lngSpan / 2;
-    const visMinLatMerc = mercatorY(center.lat - latSpan / 2);
-    const visMaxLatMerc = mercatorY(center.lat + latSpan / 2);
+    const centerX = lngToX(center.lng, zoom);
+    const centerY = latToY(center.lat, zoom);
+    const { width, height } = mapDimensions;
 
     return Object.entries(grouped)
       .map(([city, events]) => {
         const coords = cityCoordinates[city];
         if (!coords) return null;
 
-        const x = ((coords.lng - visMinLng) / (visMaxLng - visMinLng)) * 100;
-        const y = ((visMaxLatMerc - mercatorY(coords.lat)) / (visMaxLatMerc - visMinLatMerc)) * 100;
+        const markerX = lngToX(coords.lng, zoom);
+        const markerY = latToY(coords.lat, zoom);
+
+        const x = ((markerX - centerX + width / 2) / width) * 100;
+        const y = ((markerY - centerY + height / 2) / height) * 100;
 
         if (x < -5 || x > 105 || y < -5 || y > 105) return null;
 
-        return { city, events, x: clamp(x, 0, 100), y: clamp(y, 0, 100) };
+        return { city, events, x, y };
       })
       .filter((point): point is NonNullable<typeof point> => point !== null);
-  }, [filteredEvents, zoom, center]);
+  }, [filteredEvents, zoom, center, mapDimensions]);
 
   const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
 
