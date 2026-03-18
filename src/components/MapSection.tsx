@@ -143,7 +143,36 @@ const MapSection = () => {
   const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
 
   return (
-...
+    <section id="locations" className="bg-background py-20 md:py-28">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="mb-8 text-center">
+          <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-4xl">Přijeďte za námi</h2>
+          <p className="mx-auto max-w-2xl font-body text-lg text-muted-foreground">
+            Klikněte na tečku ve městě a zobrazí se lokalita, termín i čas roadshow.
+          </p>
+        </div>
+
+        <div className="mb-6 flex flex-wrap justify-center gap-3">
+          {[
+            { key: "all", label: "Vše" },
+            { key: "duben", label: "Duben" },
+            { key: "květen", label: "Květen" },
+          ].map((item) => (
+            <button
+              key={item.key}
+              onClick={() => {
+                setFilter(item.key as MonthFilter);
+                setSelectedCity(null);
+              }}
+              className={`rounded-full px-5 py-2 font-body text-sm font-semibold transition ${
+                filter === item.key ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-accent"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
         <div className="relative overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
           <iframe
             title="Google mapa České republiky"
@@ -155,12 +184,12 @@ const MapSection = () => {
             src="https://maps.google.com/maps?hl=cs&ll=49.8175,15.4730&z=7&t=m&output=embed"
           />
 
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 pointer-events-none">
             {cityPoints.map((point) => (
               <button
                 key={point.city}
                 onClick={() => setSelectedCity(point.city)}
-                className="absolute -translate-x-1/2 -translate-y-1/2"
+                className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                 style={{ left: `${point.x}%`, top: `${point.y}%` }}
                 aria-label={`Zobrazit detail pro město ${point.city}`}
               >
@@ -179,10 +208,18 @@ const MapSection = () => {
             <div className="mt-3 space-y-3">
               {selectedDetails.events.map((event, index) => (
                 <div key={`${event.city}-${event.date}-${index}`} className="rounded-lg bg-muted p-3">
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Město:</span> {event.city}</p>
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Lokalita:</span> {event.location}</p>
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Termín:</span> {event.date}</p>
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Čas:</span> {event.time}</p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Město:</span> {event.city}
+                  </p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Lokalita:</span> {event.location}
+                  </p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Termín:</span> {event.date}
+                  </p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Čas:</span> {event.time}
+                  </p>
                 </div>
               ))}
             </div>
