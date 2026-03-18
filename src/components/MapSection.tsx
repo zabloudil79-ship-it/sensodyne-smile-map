@@ -1,7 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useMemo, useState } from "react";
 
 type MonthFilter = "all" | "duben" | "květen";
 
@@ -13,7 +10,12 @@ interface EventData {
   month: "duben" | "květen";
 }
 
-const cityCoordinates: Record<string, { lat: number; lng: number }> = {
+interface CityCoords {
+  lat: number;
+  lng: number;
+}
+
+const cityCoordinates: Record<string, CityCoords> = {
   Praha: { lat: 50.0755, lng: 14.4378 },
   Plzeň: { lat: 49.7384, lng: 13.3736 },
   Žatec: { lat: 50.3272, lng: 13.5458 },
@@ -92,60 +94,68 @@ const allEvents: EventData[] = [
   { month: "květen", city: "Kadaň", location: "RP S1 Center", date: "24.05.2026", time: "ne (10-18)" },
 ];
 
-// Custom marker icon using primary color
-const createCityIcon = () =>
-  L.divIcon({
-    className: "custom-city-marker",
-    html: `<div style="
-      width: 14px;
-      height: 14px;
-      background: hsl(174, 100%, 29%);
-      border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 0 0 3px hsla(174, 100%, 29%, 0.3), 0 2px 6px rgba(0,0,0,0.3);
-    "></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
-    popupAnchor: [0, -10],
-  });
-
-const FitBounds = ({ cities }: { cities: string[] }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (cities.length === 0) return;
-    const coords = cities
-      .map((c) => cityCoordinates[c])
-      .filter(Boolean)
-      .map((c) => [c.lat, c.lng] as [number, number]);
-    if (coords.length > 0) {
-      const bounds = L.latLngBounds(coords);
-      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 9 });
-    }
-  }, [cities, map]);
-  return null;
+const CR_BOUNDS = {
+  minLat: 48.52,
+  maxLat: 51.06,
+  minLng: 12.09,
+  maxLng: 18.89,
 };
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const mercatorY = (lat: number) => {
+  const rad = (lat * Math.PI) / 180;
+  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
+};
+
+const DEFAULT_CENTER = { lat: 49.8175, lng: 15.473 };
+const DEFAULT_ZOOM = 7.28;
 
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [center, setCenter] = useState(DEFAULT_CENTER);
+
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.25, 12));
+  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.25, 5));
 
   const filteredEvents = useMemo(
     () => allEvents.filter((event) => (filter === "all" ? true : event.month === filter)),
     [filter],
   );
 
-  const cityGroups = useMemo(() => {
-    const grouped: Record<string, EventData[]> = {};
-    filteredEvents.forEach((event) => {
-      if (!grouped[event.city]) grouped[event.city] = [];
-      grouped[event.city].push(event);
-    });
-    return grouped;
-  }, [filteredEvents]);
+  const cityPoints = useMemo(() => {
+    const grouped = filteredEvents.reduce<Record<string, EventData[]>>((acc, event) => {
+      if (!acc[event.city]) acc[event.city] = [];
+      acc[event.city].push(event);
+      return acc;
+    }, {});
 
-  const cityIcon = useMemo(() => createCityIcon(), []);
-  const cityNames = useMemo(() => Object.keys(cityGroups), [cityGroups]);
-  const selectedDetails = selectedCity ? cityGroups[selectedCity] : null;
+    const scale = Math.pow(2, zoom - DEFAULT_ZOOM);
+    const lngSpan = (CR_BOUNDS.maxLng - CR_BOUNDS.minLng) / scale;
+    const latSpan = (CR_BOUNDS.maxLat - CR_BOUNDS.minLat) / scale;
+    const visMinLng = center.lng - lngSpan / 2;
+    const visMaxLng = center.lng + lngSpan / 2;
+    const visMinLatMerc = mercatorY(center.lat - latSpan / 2);
+    const visMaxLatMerc = mercatorY(center.lat + latSpan / 2);
+
+    return Object.entries(grouped)
+      .map(([city, events]) => {
+        const coords = cityCoordinates[city];
+        if (!coords) return null;
+
+        const x = ((coords.lng - visMinLng) / (visMaxLng - visMinLng)) * 100;
+        const y = ((visMaxLatMerc - mercatorY(coords.lat)) / (visMaxLatMerc - visMinLatMerc)) * 100;
+
+        if (x < -5 || x > 105 || y < -5 || y > 105) return null;
+
+        return { city, events, x: clamp(x, 0, 100), y: clamp(y, 0, 100) };
+      })
+      .filter((point): point is NonNullable<typeof point> => point !== null);
+  }, [filteredEvents, zoom, center]);
+
+  const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
 
   return (
     <section id="locations" className="bg-background py-20 md:py-28">
@@ -153,7 +163,7 @@ const MapSection = () => {
         <div className="mb-8 text-center">
           <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-4xl">Přijeďte za námi</h2>
           <p className="mx-auto max-w-2xl font-body text-lg text-muted-foreground">
-            Klikněte na bod ve městě a zobrazí se lokalita, termín i čas roadshow.
+            Klikněte na tečku ve městě a zobrazí se lokalita, termín i čas roadshow.
           </p>
         </div>
 
@@ -178,49 +188,58 @@ const MapSection = () => {
           ))}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
-          <MapContainer
-            center={[49.8175, 15.473]}
-            zoom={7}
-            style={{ height: "100%", width: "100%" }}
-            scrollWheelZoom={true}
-            zoomControl={true}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <FitBounds cities={cityNames} />
-            {cityNames.map((city) => {
-              const coords = cityCoordinates[city];
-              if (!coords) return null;
-              return (
-                <Marker
-                  key={city}
-                  position={[coords.lat, coords.lng]}
-                  icon={cityIcon}
-                  eventHandlers={{
-                    click: () => setSelectedCity(city),
-                  }}
-                >
-                  <Popup>
-                    <strong className="text-sm">{city}</strong>
-                    <br />
-                    <span className="text-xs text-gray-600">
-                      {cityGroups[city].length} {cityGroups[city].length === 1 ? "akce" : "akcí"}
-                    </span>
-                  </Popup>
-                </Marker>
-              );
-            })}
-          </MapContainer>
+        <div className="relative overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
+          <iframe
+            title="Google mapa České republiky"
+            width="100%"
+            height="100%"
+            loading="lazy"
+            className="absolute inset-0"
+            style={{ border: 0 }}
+            src={`https://maps.google.com/maps?hl=cs&ll=${center.lat},${center.lng}&z=${zoom}&t=m&output=embed`}
+          />
+
+          {/* Zoom controls */}
+          <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
+            <button
+              onClick={handleZoomIn}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
+              aria-label="Přiblížit"
+            >
+              +
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
+              aria-label="Oddálit"
+            >
+              −
+            </button>
+          </div>
+
+          <div className="absolute inset-0 pointer-events-none">
+            {cityPoints.map((point) => (
+              <button
+                key={point.city}
+                onClick={() => setSelectedCity(point.city)}
+                className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+                style={{ left: `${point.x}%`, top: `${point.y}%` }}
+                aria-label={`Zobrazit detail pro město ${point.city}`}
+              >
+                <span className="block h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
+                <span className="mt-1 block rounded-md bg-background/90 px-2 py-0.5 font-body text-[11px] font-semibold text-foreground shadow-sm">
+                  {point.city}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {selectedDetails && (
           <div className="mt-6 rounded-xl border border-border bg-card p-5 shadow-sm">
-            <h3 className="font-display text-xl font-bold text-foreground">{selectedCity}</h3>
+            <h3 className="font-display text-xl font-bold text-foreground">{selectedDetails.city}</h3>
             <div className="mt-3 space-y-3">
-              {selectedDetails.map((event, index) => (
+              {selectedDetails.events.map((event, index) => (
                 <div key={`${event.city}-${event.date}-${index}`} className="rounded-lg bg-muted p-3">
                   <p className="font-body text-sm text-foreground">
                     <span className="font-semibold">Město:</span> {event.city}
