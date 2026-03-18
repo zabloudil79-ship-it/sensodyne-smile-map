@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 type MonthFilter = "all" | "duben" | "květen";
 
@@ -94,46 +94,90 @@ const allEvents: EventData[] = [
   { month: "květen", city: "Kadaň", location: "RP S1 Center", date: "24.05.2026", time: "ne (10-18)" },
 ];
 
-const DEFAULT_CENTER = { lat: 49.8175, lng: 15.473 };
-const DEFAULT_ZOOM = 7.28;
-
-// Google Maps Web Mercator projection helpers
-const lngToX = (lng: number, zoom: number) => {
-  const worldSize = 256 * Math.pow(2, zoom);
-  return ((lng + 180) / 360) * worldSize;
+// Bounding box of Czech Republic (with padding)
+const CZ_BOUNDS = {
+  minLat: 48.55,
+  maxLat: 51.06,
+  minLng: 12.09,
+  maxLng: 18.87,
 };
 
-const latToY = (lat: number, zoom: number) => {
-  const worldSize = 256 * Math.pow(2, zoom);
-  const latRad = (lat * Math.PI) / 180;
-  const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
-  return (1 - mercN / Math.PI) / 2 * worldSize;
-};
+// SVG viewBox dimensions
+const SVG_W = 800;
+const SVG_H = 450;
+const PAD = 30;
 
-const MAP_WIDTH = 800; // reference iframe width
-const MAP_HEIGHT = 560; // reference iframe height
+const lngToSvgX = (lng: number) =>
+  PAD + ((lng - CZ_BOUNDS.minLng) / (CZ_BOUNDS.maxLng - CZ_BOUNDS.minLng)) * (SVG_W - 2 * PAD);
+
+const latToSvgY = (lat: number) =>
+  PAD + ((CZ_BOUNDS.maxLat - lat) / (CZ_BOUNDS.maxLat - CZ_BOUNDS.minLat)) * (SVG_H - 2 * PAD);
+
+// Simplified Czech Republic border outline (lon,lat pairs → SVG path)
+const CZ_BORDER_PATH = (() => {
+  // Key border points of Czech Republic (longitude, latitude)
+  const borderPoints: [number, number][] = [
+    [12.09, 50.32], [12.11, 50.32], [12.15, 50.35], [12.19, 50.33],
+    [12.24, 50.27], [12.31, 50.21], [12.35, 50.18], [12.42, 50.10],
+    [12.47, 50.05], [12.52, 50.01], [12.58, 49.96], [12.63, 49.91],
+    [12.69, 49.87], [12.74, 49.82], [12.78, 49.78], [12.81, 49.72],
+    [12.84, 49.66], [12.86, 49.60], [12.89, 49.54], [12.93, 49.48],
+    [12.97, 49.43], [13.02, 49.38], [13.08, 49.33], [13.14, 49.28],
+    [13.20, 49.24], [13.27, 49.20], [13.34, 49.16], [13.41, 49.12],
+    [13.48, 49.08], [13.56, 49.04], [13.64, 49.01], [13.72, 48.98],
+    [13.80, 48.96], [13.88, 48.94], [13.96, 48.92], [14.04, 48.90],
+    [14.12, 48.87], [14.20, 48.84], [14.28, 48.81], [14.36, 48.78],
+    [14.42, 48.76], [14.48, 48.74], [14.52, 48.72], [14.58, 48.70],
+    [14.66, 48.68], [14.74, 48.68], [14.82, 48.69], [14.90, 48.70],
+    [14.98, 48.71], [15.06, 48.72], [15.14, 48.73], [15.22, 48.74],
+    [15.34, 48.76], [15.46, 48.78], [15.58, 48.80], [15.70, 48.82],
+    [15.82, 48.84], [15.96, 48.86], [16.08, 48.88], [16.18, 48.90],
+    [16.28, 48.92], [16.38, 48.94], [16.47, 48.96], [16.55, 48.98],
+    [16.62, 48.98], [16.70, 48.98], [16.78, 48.97], [16.86, 48.96],
+    [16.94, 48.96], [17.02, 48.96], [17.08, 48.98], [17.14, 49.00],
+    [17.18, 49.04], [17.22, 49.09], [17.28, 49.14], [17.34, 49.18],
+    [17.40, 49.22], [17.46, 49.26], [17.52, 49.30], [17.58, 49.34],
+    [17.64, 49.36], [17.72, 49.38], [17.80, 49.40], [17.88, 49.42],
+    [17.96, 49.44], [18.04, 49.46], [18.12, 49.48], [18.20, 49.50],
+    [18.28, 49.52], [18.36, 49.54], [18.44, 49.56], [18.50, 49.58],
+    [18.56, 49.60], [18.62, 49.64], [18.68, 49.68], [18.72, 49.72],
+    [18.76, 49.76], [18.80, 49.80], [18.84, 49.84], [18.86, 49.88],
+    [18.87, 49.92], [18.85, 49.96], [18.82, 50.00], [18.78, 50.04],
+    [18.74, 50.08], [18.70, 50.12], [18.66, 50.16], [18.60, 50.18],
+    [18.54, 50.20], [18.46, 50.22], [18.38, 50.24], [18.30, 50.26],
+    [18.22, 50.28], [18.14, 50.30], [18.04, 50.32], [17.94, 50.34],
+    [17.84, 50.36], [17.72, 50.38], [17.60, 50.40], [17.48, 50.42],
+    [17.36, 50.44], [17.24, 50.42], [17.12, 50.40], [17.00, 50.38],
+    [16.88, 50.36], [16.78, 50.34], [16.68, 50.32], [16.58, 50.30],
+    [16.48, 50.28], [16.38, 50.28], [16.28, 50.30], [16.18, 50.32],
+    [16.08, 50.36], [16.00, 50.40], [15.92, 50.44], [15.84, 50.48],
+    [15.76, 50.52], [15.68, 50.54], [15.60, 50.56], [15.52, 50.58],
+    [15.44, 50.60], [15.36, 50.62], [15.28, 50.64], [15.20, 50.68],
+    [15.12, 50.72], [15.04, 50.76], [14.96, 50.80], [14.88, 50.84],
+    [14.82, 50.86], [14.76, 50.88], [14.68, 50.90], [14.60, 50.92],
+    [14.52, 50.94], [14.44, 50.96], [14.36, 50.98], [14.28, 51.00],
+    [14.22, 51.02], [14.16, 51.04], [14.10, 51.05], [14.04, 51.06],
+    [13.96, 51.06], [13.88, 51.04], [13.80, 51.02], [13.72, 51.00],
+    [13.64, 50.98], [13.56, 50.96], [13.48, 50.94], [13.40, 50.92],
+    [13.32, 50.90], [13.24, 50.88], [13.16, 50.86], [13.08, 50.84],
+    [13.00, 50.80], [12.92, 50.76], [12.84, 50.72], [12.76, 50.68],
+    [12.68, 50.64], [12.60, 50.60], [12.52, 50.56], [12.44, 50.52],
+    [12.36, 50.48], [12.28, 50.44], [12.20, 50.40], [12.14, 50.36],
+    [12.09, 50.32],
+  ];
+
+  return borderPoints
+    .map(([lng, lat], i) => {
+      const x = lngToSvgX(lng).toFixed(1);
+      const y = latToSvgY(lat).toFixed(1);
+      return `${i === 0 ? "M" : "L"}${x},${y}`;
+    })
+    .join(" ") + " Z";
+})();
 
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-  const [center, setCenter] = useState(DEFAULT_CENTER);
-  const [mapDimensions, setMapDimensions] = useState({ width: MAP_WIDTH, height: MAP_HEIGHT });
-  const mapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = mapRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      if (width > 0 && height > 0) setMapDimensions({ width, height });
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.25, 12));
-  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.25, 5));
 
   const filteredEvents = useMemo(
     () => allEvents.filter((event) => (filter === "all" ? true : event.month === filter)),
@@ -147,46 +191,37 @@ const MapSection = () => {
       return acc;
     }, {});
 
-    const centerX = lngToX(center.lng, zoom);
-    const centerY = latToY(center.lat, zoom);
-    const { width, height } = mapDimensions;
-
     return Object.entries(grouped)
       .map(([city, events]) => {
         const coords = cityCoordinates[city];
         if (!coords) return null;
-
-        const markerX = lngToX(coords.lng, zoom);
-        const markerY = latToY(coords.lat, zoom);
-
-        const x = ((markerX - centerX + width / 2) / width) * 100;
-        const y = ((markerY - centerY + height / 2) / height) * 100;
-
-        if (x < -5 || x > 105 || y < -5 || y > 105) return null;
-
+        const x = lngToSvgX(coords.lng);
+        const y = latToSvgY(coords.lat);
         return { city, events, x, y };
       })
-      .filter((point): point is NonNullable<typeof point> => point !== null);
-  }, [filteredEvents, zoom, center, mapDimensions]);
+      .filter((p): p is NonNullable<typeof p> => p !== null);
+  }, [filteredEvents]);
 
-  const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
+  const selectedDetails = cityPoints.find((p) => p.city === selectedCity);
 
   return (
     <section id="locations" className="bg-background py-20 md:py-28">
       <div className="container mx-auto max-w-6xl px-4">
         <div className="mb-8 text-center">
-          <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-4xl">Přijeďte za námi</h2>
+          <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-4xl">
+            Přijeďte za námi
+          </h2>
           <p className="mx-auto max-w-2xl font-body text-lg text-muted-foreground">
             Klikněte na tečku ve městě a zobrazí se lokalita, termín i čas roadshow.
           </p>
         </div>
 
         <div className="mb-6 flex flex-wrap justify-center gap-3">
-          {[
+          {([
             { key: "all", label: "Vše" },
             { key: "duben", label: "Duben" },
             { key: "květen", label: "Květen" },
-          ].map((item) => (
+          ] as const).map((item) => (
             <button
               key={item.key}
               onClick={() => {
@@ -194,7 +229,9 @@ const MapSection = () => {
                 setSelectedCity(null);
               }}
               className={`rounded-full px-5 py-2 font-body text-sm font-semibold transition ${
-                filter === item.key ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-accent"
+                filter === item.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-foreground hover:bg-accent"
               }`}
             >
               {item.label}
@@ -202,56 +239,68 @@ const MapSection = () => {
           ))}
         </div>
 
-        <div ref={mapRef} className="relative overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
-          <iframe
-            title="Google mapa České republiky"
-            width="100%"
-            height="100%"
-            loading="lazy"
-            className="absolute inset-0"
-            style={{ border: 0 }}
-            src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d${Math.round(800000 / Math.pow(2, zoom - 7))}!2d${center.lng}!3d${center.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1scs!2scz`}
-          />
+        <div className="relative mx-auto w-full max-w-4xl">
+          <svg
+            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+            className="w-full h-auto"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Czech Republic border outline */}
+            <path
+              d={CZ_BORDER_PATH}
+              fill="none"
+              className="stroke-primary/40"
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
 
-          {/* Zoom controls */}
-          <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
-            <button
-              onClick={handleZoomIn}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
-              aria-label="Přiblížit"
-            >
-              +
-            </button>
-            <button
-              onClick={handleZoomOut}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
-              aria-label="Oddálit"
-            >
-              −
-            </button>
-          </div>
-
-          <div className="absolute inset-0 pointer-events-none">
-            {cityPoints.map((point) => (
-              <button
-                key={point.city}
-                onClick={() => setSelectedCity(point.city)}
-                className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
-                style={{ left: `${point.x}%`, top: `${point.y}%` }}
-                aria-label={`Zobrazit detail pro město ${point.city}`}
-              >
-                <span className="block h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
-                <span className="mt-1 block rounded-md bg-background/90 px-2 py-0.5 font-body text-[11px] font-semibold text-foreground shadow-sm">
-                  {point.city}
-                </span>
-              </button>
-            ))}
-          </div>
+            {/* City markers */}
+            {cityPoints.map((point) => {
+              const isSelected = selectedCity === point.city;
+              return (
+                <g
+                  key={point.city}
+                  onClick={() => setSelectedCity(point.city)}
+                  className="cursor-pointer"
+                >
+                  {/* Hit area */}
+                  <circle cx={point.x} cy={point.y} r="12" fill="transparent" />
+                  {/* Glow ring */}
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={isSelected ? 8 : 6}
+                    className={isSelected ? "fill-primary/20" : "fill-primary/10"}
+                  />
+                  {/* Dot */}
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={isSelected ? 4 : 3}
+                    className="fill-primary"
+                  />
+                  {/* Label */}
+                  <text
+                    x={point.x}
+                    y={point.y - 10}
+                    textAnchor="middle"
+                    className="fill-foreground font-body"
+                    fontSize="9"
+                    fontWeight="600"
+                  >
+                    {point.city}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
         </div>
 
         {selectedDetails && (
           <div className="mt-6 rounded-xl border border-border bg-card p-5 shadow-sm">
-            <h3 className="font-display text-xl font-bold text-foreground">{selectedDetails.city}</h3>
+            <h3 className="font-display text-xl font-bold text-foreground">
+              {selectedDetails.city}
+            </h3>
             <div className="mt-3 space-y-3">
               {selectedDetails.events.map((event, index) => (
                 <div key={`${event.city}-${event.date}-${index}`} className="rounded-lg bg-muted p-3">
