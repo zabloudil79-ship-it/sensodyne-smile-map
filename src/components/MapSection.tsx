@@ -117,8 +117,8 @@ const MapSection = () => {
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [center, setCenter] = useState(DEFAULT_CENTER);
 
-  const handleZoomIn = () => setZoom((z) => Math.min(z + 1, 12));
-  const handleZoomOut = () => setZoom((z) => Math.max(z - 1, 6));
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.5, 12));
+  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.5, 6));
 
   const filteredEvents = useMemo(
     () => allEvents.filter((event) => (filter === "all" ? true : event.month === filter)),
