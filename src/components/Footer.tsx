@@ -1,4 +1,5 @@
 import sensodyneLogo from "@/assets/sensodyne-logo.jpg";
+import ppmLogo from "@/assets/logo-ppm-factum.png";
 
 const Footer = () => {
   return (
@@ -15,6 +16,10 @@ const Footer = () => {
         <p className="font-body text-primary-foreground/60 text-xs mt-2">
           Haleon — No.1 Dentist Recommended Brand
         </p>
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <span className="font-body text-primary-foreground/50 text-xs">Realizace:</span>
+          <img src={ppmLogo} alt="PPM Factum" className="h-8 brightness-0 invert opacity-60" />
+        </div>
       </div>
     </footer>
   );
