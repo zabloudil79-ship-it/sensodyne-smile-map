@@ -196,8 +196,26 @@ const MapSection = () => {
             loading="lazy"
             className="absolute inset-0"
             style={{ border: 0 }}
-            src="https://maps.google.com/maps?hl=cs&ll=49.8175,15.4730&z=7&t=m&output=embed"
+            src={`https://maps.google.com/maps?hl=cs&ll=${center.lat},${center.lng}&z=${zoom}&t=m&output=embed`}
           />
+
+          {/* Zoom controls */}
+          <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
+            <button
+              onClick={handleZoomIn}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
+              aria-label="Přiblížit"
+            >
+              +
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
+              aria-label="Oddálit"
+            >
+              −
+            </button>
+          </div>
 
           <div className="absolute inset-0 pointer-events-none">
             {cityPoints.map((point) => (
