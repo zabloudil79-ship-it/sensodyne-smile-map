@@ -54,23 +54,6 @@ const HeroSection = () => {
         </p>
       </div>
 
-      <div className="absolute bottom-20 left-1/2 z-10 w-[92%] max-w-5xl -translate-x-1/2">
-        <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-center sm:grid-cols-3 lg:grid-cols-5">
-          {quickLinks.map((link, index) => (
-            <div key={link.id} className="flex items-center justify-center lg:justify-center">
-              <button
-                onClick={() => scrollToSection(link.id)}
-                className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/95 transition hover:text-primary-foreground"
-              >
-                {link.label}
-              </button>
-              {index < quickLinks.length - 1 && (
-                <span className="ml-2 hidden font-body text-primary-foreground/70 lg:inline">,</span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
 
       <button
         onClick={() => scrollToSection("about")}
