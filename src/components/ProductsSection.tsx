@@ -1,25 +1,23 @@
-import { Droplets, ShieldCheck, Sparkles, Tooth } from "lucide-react";
-
 const products = [
   {
     title: "Zubní kartáčky",
     description: "Šetrné kartáčky pro každodenní péči o citlivé zuby a dásně.",
-    icon: Tooth,
+    icon: "🪥",
   },
   {
     title: "Ústní vody",
     description: "Doplňková péče pro svěží dech a ochranu před citlivostí.",
-    icon: Droplets,
+    icon: "💧",
   },
   {
     title: "Whitening řada",
     description: "Produkty pro bělejší úsměv bez kompromisů v péči o citlivost.",
-    icon: Sparkles,
+    icon: "✨",
   },
   {
     title: "Komplexní ochrana",
     description: "Každodenní produkty s důrazem na dlouhodobé zdraví zubů.",
-    icon: ShieldCheck,
+    icon: "🛡️",
   },
 ];
 
@@ -35,21 +33,18 @@ const ProductsSection = () => {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => {
-            const Icon = product.icon;
-            return (
-              <article
-                key={product.title}
-                className="rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-              >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/15 text-secondary">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-display text-xl font-semibold text-foreground">{product.title}</h3>
-                <p className="mt-3 font-body text-sm leading-relaxed text-muted-foreground">{product.description}</p>
-              </article>
-            );
-          })}
+          {products.map((product) => (
+            <article
+              key={product.title}
+              className="rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/15 text-xl">
+                {product.icon}
+              </div>
+              <h3 className="font-display text-xl font-semibold text-foreground">{product.title}</h3>
+              <p className="mt-3 font-body text-sm leading-relaxed text-muted-foreground">{product.description}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
