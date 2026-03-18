@@ -171,6 +171,33 @@ const FeedbackSection = () => {
               {errors.message && <p className="mt-1.5 font-body text-sm text-destructive">{errors.message}</p>}
             </div>
 
+            <div className="md:col-span-2 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={formData.consentData === true}
+                  onChange={(e) => handleChange("consentData", e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+                />
+                <span className="font-body text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  Souhlasím se zpracováním osobních údajů <span className="text-destructive">*</span>
+                </span>
+              </label>
+              {errors.consentData && <p className="ml-7 font-body text-sm text-destructive">{errors.consentData}</p>}
+
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={formData.consentMarketing}
+                  onChange={(e) => handleChange("consentMarketing", e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+                />
+                <span className="font-body text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  Souhlasím se zasíláním výhodných nabídek
+                </span>
+              </label>
+            </div>
+
             <div className="md:col-span-2 flex justify-center">
               <button
                 type="submit"
