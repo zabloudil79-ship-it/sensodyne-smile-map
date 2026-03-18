@@ -23,7 +23,7 @@ const VideoSection = () => {
             muted
             loop
             playsInline
-            className="w-full h-[200px] sm:h-[280px] lg:h-[360px] object-cover"
+            className="w-full h-auto"
           >
             <source src="/videos/sensodyne-dm.mp4" type="video/mp4" />
           </video>
