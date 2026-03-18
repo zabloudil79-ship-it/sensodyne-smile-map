@@ -3,6 +3,7 @@ import AboutSection from "@/components/AboutSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import MapSection from "@/components/MapSection";
 import GallerySection from "@/components/GallerySection";
+import FeedbackSection from "@/components/FeedbackSection";
 import Footer from "@/components/Footer";
 import StickyNav from "@/components/StickyNav";
 
@@ -15,6 +16,7 @@ const Index = () => {
       <FeaturesSection />
       <MapSection />
       <GallerySection />
+      <FeedbackSection />
       <Footer />
     </div>
   );
