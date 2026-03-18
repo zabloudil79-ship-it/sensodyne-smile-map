@@ -1,4 +1,5 @@
 import sensodyneLogo from "@/assets/sensodyne-logo.jpg";
+import ppmLogo from "@/assets/logo-ppm-factum.png";
 
 const Footer = () => {
   return (
