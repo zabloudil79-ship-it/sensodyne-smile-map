@@ -19,7 +19,7 @@ const Footer = () => {
         <div className="mt-6 flex items-center justify-center gap-2">
           <span className="font-body text-primary-foreground/50 text-xs">Realizace:</span>
           <img src={ppmLogo} alt="PPM Factum" className="h-8 brightness-0 invert opacity-60" />
-        </p>
+        </div>
       </div>
     </footer>
   );
