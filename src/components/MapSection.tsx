@@ -108,9 +108,17 @@ const mercatorY = (lat: number) => {
   return Math.log(Math.tan(Math.PI / 4 + rad / 2));
 };
 
+const DEFAULT_CENTER = { lat: 49.8175, lng: 15.473 };
+const DEFAULT_ZOOM = 7;
+
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [center, setCenter] = useState(DEFAULT_CENTER);
+
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 1, 12));
+  const handleZoomOut = () => setZoom((z) => Math.max(z - 1, 6));
 
   const filteredEvents = useMemo(
     () => allEvents.filter((event) => (filter === "all" ? true : event.month === filter)),
