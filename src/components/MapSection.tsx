@@ -245,14 +245,6 @@ const MapSection = () => {
             className="w-full h-auto"
             xmlns="http://www.w3.org/2000/svg"
           >
-            {/* Czech Republic border outline */}
-            <path
-              d={CZ_BORDER_PATH}
-              fill="none"
-              className="stroke-primary/40"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
 
             {/* City markers */}
             {cityPoints.map((point) => {
