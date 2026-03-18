@@ -37,7 +37,7 @@ const StickyNav = () => {
           <img
             src={sensodyneLogo}
             alt="Sensodyne"
-            className={`h-8 rounded transition-all duration-300 ${scrolled ? "" : "brightness-0 invert"}`}
+            className="h-8 rounded transition-all duration-300"
           />
         </button>
 
