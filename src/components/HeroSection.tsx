@@ -36,7 +36,7 @@ const HeroSection = () => {
         </p>
       </div>
 
-      <div className="absolute bottom-20 left-1/2 z-10 flex w-[92%] max-w-3xl -translate-x-1/2 flex-wrap items-center justify-center gap-2 sm:gap-3">
+      <div className="absolute bottom-20 left-1/2 z-10 flex w-[92%] max-w-4xl -translate-x-1/2 flex-wrap items-center justify-center gap-2 sm:gap-3">
         <button
           onClick={() => scrollToSection("about")}
           className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
@@ -54,6 +54,12 @@ const HeroSection = () => {
           className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
         >
           Galerie
+        </button>
+        <button
+          onClick={() => scrollToSection("products")}
+          className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
+        >
+          Další produkty
         </button>
         <button
           onClick={() => scrollToSection("feedback")}
