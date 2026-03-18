@@ -8,7 +8,7 @@ const VideoSection = () => {
             controls
             muted
             playsInline
-            className="w-full h-[320px] sm:h-[460px] lg:h-[600px] object-cover"
+            className="h-[320px] sm:h-[460px] lg:h-[600px] mx-auto"
           />
         </div>
       </div>
