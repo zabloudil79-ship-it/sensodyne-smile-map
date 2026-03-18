@@ -132,21 +132,28 @@ const MapSection = () => {
       return acc;
     }, {});
 
-    const maxLatMerc = mercatorY(CR_BOUNDS.maxLat);
-    const minLatMerc = mercatorY(CR_BOUNDS.minLat);
+    const scale = Math.pow(2, zoom - DEFAULT_ZOOM);
+    const lngSpan = (CR_BOUNDS.maxLng - CR_BOUNDS.minLng) / scale;
+    const latSpan = (CR_BOUNDS.maxLat - CR_BOUNDS.minLat) / scale;
+    const visMinLng = center.lng - lngSpan / 2;
+    const visMaxLng = center.lng + lngSpan / 2;
+    const visMinLatMerc = mercatorY(center.lat - latSpan / 2);
+    const visMaxLatMerc = mercatorY(center.lat + latSpan / 2);
 
     return Object.entries(grouped)
       .map(([city, events]) => {
         const coords = cityCoordinates[city];
         if (!coords) return null;
 
-        const x = clamp(((coords.lng - CR_BOUNDS.minLng) / (CR_BOUNDS.maxLng - CR_BOUNDS.minLng)) * 100, 1.5, 98.5);
-        const y = clamp(((maxLatMerc - mercatorY(coords.lat)) / (maxLatMerc - minLatMerc)) * 100, 2, 98);
+        const x = ((coords.lng - visMinLng) / (visMaxLng - visMinLng)) * 100;
+        const y = ((visMaxLatMerc - mercatorY(coords.lat)) / (visMaxLatMerc - visMinLatMerc)) * 100;
 
-        return { city, events, x, y };
+        if (x < -5 || x > 105 || y < -5 || y > 105) return null;
+
+        return { city, events, x: clamp(x, 0, 100), y: clamp(y, 0, 100) };
       })
       .filter((point): point is NonNullable<typeof point> => point !== null);
-  }, [filteredEvents]);
+  }, [filteredEvents, zoom, center]);
 
   const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
 
