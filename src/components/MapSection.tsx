@@ -202,7 +202,7 @@ const MapSection = () => {
           ))}
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
+        <div ref={mapRef} className="relative overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
           <iframe
             title="Google mapa České republiky"
             width="100%"
