@@ -31,7 +31,7 @@ const MapSection = ({ locations = defaultLocations }: MapSectionProps) => {
       <div className="container max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Kde nás najdete
+            Přijeďte za námi
           </h2>
           <p className="font-body text-muted-foreground text-lg max-w-2xl mx-auto">
             Roadshow navštíví města po celé České republice
