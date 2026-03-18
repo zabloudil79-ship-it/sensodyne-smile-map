@@ -109,7 +109,7 @@ const mercatorY = (lat: number) => {
 };
 
 const DEFAULT_CENTER = { lat: 49.8175, lng: 15.473 };
-const DEFAULT_ZOOM = 8.09;
+const DEFAULT_ZOOM = 7.28;
 
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
