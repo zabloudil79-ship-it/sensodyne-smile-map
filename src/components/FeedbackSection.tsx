@@ -17,7 +17,21 @@ const feedbackSchema = z.object({
     .trim()
     .min(10, "Napište nám prosím krátkou zpětnou vazbu")
     .max(1000, "Zpráva je příliš dlouhá"),
+  consentData: z.literal(true, { errorMap: () => ({ message: "Musíte souhlasit se zpracováním údajů" }) }),
+  consentMarketing: z.boolean(),
 });
+
+type FormData = z.infer<typeof feedbackSchema>;
+
+const initialData: FormData = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  message: "",
+  consentData: false as unknown as true,
+  consentMarketing: false,
+};
 
 type FormData = z.infer<typeof feedbackSchema>;
 
