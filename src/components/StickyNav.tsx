@@ -56,59 +56,36 @@ const StickyNav = () => {
             </button>
           ))}
 
-          {/* Language switcher */}
-          <div className={`ml-3 flex items-center rounded-full border transition-all duration-300 ${
-            scrolled ? "border-border" : "border-primary-foreground/30"
-          }`}>
-            <button
-              onClick={() => setLang("cs")}
-              className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
-                lang === "cs"
-                  ? scrolled
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-primary-foreground text-foreground"
-                  : scrolled
-                    ? "text-muted-foreground hover:text-foreground"
-                    : "text-primary-foreground/60 hover:text-primary-foreground"
-              }`}
-            >
-              CZ
-            </button>
-            <button
-              onClick={() => setLang("en")}
-              className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
-                lang === "en"
-                  ? scrolled
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-primary-foreground text-foreground"
-                  : scrolled
-                    ? "text-muted-foreground hover:text-foreground"
-                    : "text-primary-foreground/60 hover:text-primary-foreground"
-              }`}
-            >
-              EN
-            </button>
-          </div>
         </div>
 
-        {/* Mobile language switcher */}
-        <div className="flex md:hidden items-center rounded-full border transition-all duration-300 border-primary-foreground/30">
+        {/* Language switcher - fixed top right */}
+        <div className={`fixed top-3 right-4 z-[60] flex items-center rounded-full border px-1 py-1 transition-all duration-300 ${
+          scrolled ? "border-border bg-background/90 backdrop-blur-sm shadow-sm" : "border-primary-foreground/30 bg-foreground/20 backdrop-blur-sm"
+        }`}>
           <button
             onClick={() => setLang("cs")}
-            className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
+            className={`px-3.5 py-1.5 rounded-full font-body text-sm font-bold tracking-wide transition-all duration-300 ${
               lang === "cs"
-                ? scrolled ? "bg-primary text-primary-foreground" : "bg-primary-foreground text-foreground"
-                : scrolled ? "text-muted-foreground" : "text-primary-foreground/60"
+                ? scrolled
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-primary-foreground text-foreground"
+                : scrolled
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-primary-foreground/60 hover:text-primary-foreground"
             }`}
           >
             CZ
           </button>
           <button
             onClick={() => setLang("en")}
-            className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
+            className={`px-3.5 py-1.5 rounded-full font-body text-sm font-bold tracking-wide transition-all duration-300 ${
               lang === "en"
-                ? scrolled ? "bg-primary text-primary-foreground" : "bg-primary-foreground text-foreground"
-                : scrolled ? "text-muted-foreground" : "text-primary-foreground/60"
+                ? scrolled
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-primary-foreground text-foreground"
+                : scrolled
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-primary-foreground/60 hover:text-primary-foreground"
             }`}
           >
             EN
