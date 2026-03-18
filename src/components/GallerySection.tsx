@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import gallery1 from "@/assets/gallery-1.jpg";
 import gallery2 from "@/assets/gallery-2.jpg";
 import gallery3 from "@/assets/gallery-3.jpg";
@@ -33,43 +35,139 @@ const GallerySection = () => {
     { src: gallery3, alt: "Předávání vzorků a poradenství na roadshow" },
   ];
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const showPrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const showNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const showPrevLightbox = () => {
+    setLightboxIndex((prev) => (prev === null ? null : (prev - 1 + images.length) % images.length));
+  };
+
+  const showNextLightbox = () => {
+    setLightboxIndex((prev) => (prev === null ? null : (prev + 1) % images.length));
+  };
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLightboxIndex(null);
+      if (event.key === "ArrowLeft") showPrevLightbox();
+      if (event.key === "ArrowRight") showNextLightbox();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightboxIndex]);
+
   return (
     <section id="gallery" className="py-20 md:py-28 bg-muted">
       <div className="container max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Galerie
-          </h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">Galerie</h2>
           <p className="font-body text-muted-foreground text-lg max-w-2xl mx-auto">
             Nahlédněte do atmosféry naší roadshow
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="overflow-hidden rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 aspect-[16/10] sm:col-span-2">
+
+        <div className="relative overflow-hidden rounded-2xl shadow-lg bg-card">
+          <button
+            onClick={showPrev}
+            aria-label="Předchozí fotografie"
+            className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground transition hover:bg-background"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={showNext}
+            aria-label="Další fotografie"
+            className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground transition hover:bg-background"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={() => setLightboxIndex(currentIndex)}
+            className="block w-full"
+            aria-label="Zvětšit fotografii"
+          >
             <img
-              src={images[0].src}
-              alt={images[0].alt}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              src={images[currentIndex].src}
+              alt={images[currentIndex].alt}
+              className="w-full h-[320px] sm:h-[460px] lg:h-[600px] object-cover"
             />
+          </button>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-4 py-2 text-xs font-body text-foreground">
+            {currentIndex + 1} / {images.length}
           </div>
-          {images.slice(1).map((img) => (
-            <div
+        </div>
+
+        <div className="mt-6 flex gap-3 overflow-x-auto pb-2">
+          {images.map((img, index) => (
+            <button
               key={img.src}
-              className="overflow-hidden rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 aspect-[3/4]"
+              onClick={() => setCurrentIndex(index)}
+              className={`relative h-20 w-20 min-w-20 overflow-hidden rounded-xl border-2 transition ${
+                currentIndex === index ? "border-primary" : "border-border"
+              }`}
+              aria-label={`Zobrazit fotografii ${index + 1}`}
             >
               <img
                 src={img.src}
                 alt={img.alt}
                 loading="lazy"
                 decoding="async"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="h-full w-full object-cover"
               />
-            </div>
+            </button>
           ))}
         </div>
       </div>
+
+      {lightboxIndex !== null && (
+        <div className="fixed inset-0 z-[100] bg-foreground/90 p-4 sm:p-8">
+          <button
+            onClick={() => setLightboxIndex(null)}
+            aria-label="Zavřít zvětšení"
+            className="absolute right-4 top-4 rounded-full bg-background/90 p-2 text-foreground hover:bg-background"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={showPrevLightbox}
+            aria-label="Předchozí fotografie"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground hover:bg-background"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          <button
+            onClick={showNextLightbox}
+            aria-label="Další fotografie"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-background/90 p-2 text-foreground hover:bg-background"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+
+          <div className="mx-auto flex h-full max-w-6xl items-center justify-center">
+            <img
+              src={images[lightboxIndex].src}
+              alt={images[lightboxIndex].alt}
+              className="max-h-full w-auto max-w-full rounded-xl object-contain"
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 };
