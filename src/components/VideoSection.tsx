@@ -14,7 +14,7 @@ const VideoSection = () => {
             playsInline
             className="w-full h-[320px] sm:h-[460px] lg:h-[600px] object-cover"
           >
-            <source src="/videos/sensodyne-dm-4.mp4" type="video/mp4" />
+            <source src="/videos/sensodyne-dm-komprimovany.mp4" type="video/mp4" />
           </video>
         </div>
       </div>
