@@ -1,4 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 type MonthFilter = "all" | "duben" | "květen";
 
@@ -10,12 +13,7 @@ interface EventData {
   month: "duben" | "květen";
 }
 
-interface CityCoords {
-  lat: number;
-  lng: number;
-}
-
-const cityCoordinates: Record<string, CityCoords> = {
+const cityCoordinates: Record<string, { lat: number; lng: number }> = {
   Praha: { lat: 50.0755, lng: 14.4378 },
   Plzeň: { lat: 49.7384, lng: 13.3736 },
   Žatec: { lat: 50.3272, lng: 13.5458 },
@@ -94,82 +92,44 @@ const allEvents: EventData[] = [
   { month: "květen", city: "Kadaň", location: "RP S1 Center", date: "24.05.2026", time: "ne (10-18)" },
 ];
 
-const DEFAULT_CENTER = { lat: 49.8175, lng: 15.473 };
-const DEFAULT_ZOOM = 7.28;
+// Custom circle marker icon using SVG
+const createMarkerIcon = () =>
+  L.divIcon({
+    className: "",
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:hsl(240,60%,40%);border:2px solid white;box-shadow:0 0 0 3px hsl(240 60% 40% / 0.25);"></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -10],
+  });
 
-// Google Maps Web Mercator projection helpers
-const lngToX = (lng: number, zoom: number) => {
-  const worldSize = 256 * Math.pow(2, zoom);
-  return ((lng + 180) / 360) * worldSize;
-};
-
-const latToY = (lat: number, zoom: number) => {
-  const worldSize = 256 * Math.pow(2, zoom);
-  const latRad = (lat * Math.PI) / 180;
-  const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
-  return (1 - mercN / Math.PI) / 2 * worldSize;
-};
-
-const MAP_WIDTH = 800; // reference iframe width
-const MAP_HEIGHT = 560; // reference iframe height
+const markerIcon = createMarkerIcon();
 
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-  const [center, setCenter] = useState(DEFAULT_CENTER);
-  const [mapDimensions, setMapDimensions] = useState({ width: MAP_WIDTH, height: MAP_HEIGHT });
-  const mapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = mapRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      if (width > 0 && height > 0) setMapDimensions({ width, height });
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const handleZoomIn = () => setZoom((z) => Math.min(z + 0.25, 12));
-  const handleZoomOut = () => setZoom((z) => Math.max(z - 0.25, 5));
 
   const filteredEvents = useMemo(
     () => allEvents.filter((event) => (filter === "all" ? true : event.month === filter)),
     [filter],
   );
 
-  const cityPoints = useMemo(() => {
+  const cityGroups = useMemo(() => {
     const grouped = filteredEvents.reduce<Record<string, EventData[]>>((acc, event) => {
       if (!acc[event.city]) acc[event.city] = [];
       acc[event.city].push(event);
       return acc;
     }, {});
 
-    const centerX = lngToX(center.lng, zoom);
-    const centerY = latToY(center.lat, zoom);
-    const { width, height } = mapDimensions;
-
     return Object.entries(grouped)
       .map(([city, events]) => {
         const coords = cityCoordinates[city];
         if (!coords) return null;
-
-        const markerX = lngToX(coords.lng, zoom);
-        const markerY = latToY(coords.lat, zoom);
-
-        const x = ((markerX - centerX + width / 2) / width) * 100;
-        const y = ((markerY - centerY + height / 2) / height) * 100;
-
-        if (x < -5 || x > 105 || y < -5 || y > 105) return null;
-
-        return { city, events, x, y };
+        return { city, events, coords };
       })
-      .filter((point): point is NonNullable<typeof point> => point !== null);
-  }, [filteredEvents, zoom, center, mapDimensions]);
+      .filter((g): g is NonNullable<typeof g> => g !== null);
+  }, [filteredEvents]);
 
-  const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
+  const selectedDetails = cityGroups.find((g) => g.city === selectedCity);
 
   return (
     <section id="locations" className="bg-background py-20 md:py-28">
@@ -202,51 +162,35 @@ const MapSection = () => {
           ))}
         </div>
 
-        <div ref={mapRef} className="relative overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
-          <iframe
-            title="Google mapa České republiky"
-            width="100%"
-            height="100%"
-            loading="lazy"
-            className="absolute inset-0"
-            style={{ border: 0 }}
-            src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d${Math.round(800000 / Math.pow(2, zoom - 7))}!2d${center.lng}!3d${center.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1scs!2scz`}
-          />
-
-          {/* Zoom controls */}
-          <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
-            <button
-              onClick={handleZoomIn}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
-              aria-label="Přiblížit"
-            >
-              +
-            </button>
-            <button
-              onClick={handleZoomOut}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
-              aria-label="Oddálit"
-            >
-              −
-            </button>
-          </div>
-
-          <div className="absolute inset-0 pointer-events-none">
-            {cityPoints.map((point) => (
-              <button
-                key={point.city}
-                onClick={() => setSelectedCity(point.city)}
-                className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
-                style={{ left: `${point.x}%`, top: `${point.y}%` }}
-                aria-label={`Zobrazit detail pro město ${point.city}`}
+        <div className="overflow-hidden rounded-2xl border border-border shadow-lg" style={{ height: "560px" }}>
+          <MapContainer
+            center={[49.8175, 15.473]}
+            zoom={7}
+            scrollWheelZoom={true}
+            style={{ height: "100%", width: "100%" }}
+            zoomControl={true}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {cityGroups.map((group) => (
+              <Marker
+                key={group.city}
+                position={[group.coords.lat, group.coords.lng]}
+                icon={markerIcon}
+                eventHandlers={{
+                  click: () => setSelectedCity(group.city),
+                }}
               >
-                <span className="block h-3 w-3 rounded-full bg-primary ring-4 ring-primary/20" />
-                <span className="mt-1 block rounded-md bg-background/90 px-2 py-0.5 font-body text-[11px] font-semibold text-foreground shadow-sm">
-                  {point.city}
-                </span>
-              </button>
+                <Popup>
+                  <strong>{group.city}</strong>
+                  <br />
+                  {group.events.length} událost{group.events.length > 1 ? "i" : ""}
+                </Popup>
+              </Marker>
             ))}
-          </div>
+          </MapContainer>
         </div>
 
         {selectedDetails && (
