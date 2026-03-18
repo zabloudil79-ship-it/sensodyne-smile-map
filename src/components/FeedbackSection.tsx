@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { z } from "zod";
+import { Send, CheckCircle } from "lucide-react";
 
 const feedbackSchema = z.object({
   firstName: z.string().trim().min(2, "Zadejte jméno").max(80, "Jméno je příliš dlouhé"),
@@ -28,6 +29,9 @@ const initialData: FormData = {
   message: "",
 };
 
+const inputClass =
+  "h-12 w-full rounded-xl border border-input bg-background px-4 font-body text-foreground outline-none ring-offset-background transition-all duration-300 focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/30";
+
 const FeedbackSection = () => {
   const [formData, setFormData] = useState<FormData>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -41,9 +45,7 @@ const FeedbackSection = () => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const result = feedbackSchema.safeParse(formData);
-
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors;
       setErrors({
@@ -55,30 +57,38 @@ const FeedbackSection = () => {
       });
       return;
     }
-
     setErrors({});
     setIsSubmitted(true);
     setFormData(initialData);
   };
 
   return (
-    <section id="feedback" className="bg-background py-20 md:py-28">
-      <div className="container mx-auto max-w-4xl px-4">
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-10">
-          <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-            Podělte se o Váš názor
-          </h2>
-          <p className="mt-4 font-body text-base text-muted-foreground md:text-lg">
-            Jak se Vám roadshow líbila? Napište nám zpětnou vazbu a můžete vyhrát pastu pro Váš pěkný úsměv.
-          </p>
+    <section id="feedback" className="relative py-24 md:py-32 overflow-hidden" style={{ background: "var(--gradient-section)" }}>
+      <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-secondary/[0.04] blur-3xl translate-x-1/3 -translate-y-1/3" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-primary/[0.03] blur-3xl -translate-x-1/3 translate-y-1/3" />
+
+      <div className="container relative mx-auto max-w-4xl px-4">
+        <div className="rounded-3xl border border-border/60 bg-card/80 backdrop-blur-sm p-8 shadow-elegant md:p-12">
+          <div className="text-center mb-10">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold font-body mb-4">
+              Zpětná vazba
+            </span>
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+              Podělte se o <span className="gradient-text">Váš názor</span>
+            </h2>
+            <p className="mt-4 font-body text-base text-muted-foreground md:text-lg max-w-xl mx-auto">
+              Jak se Vám roadshow líbila? Napište nám zpětnou vazbu a můžete vyhrát pastu pro Váš pěkný úsměv.
+            </p>
+          </div>
 
           {isSubmitted && (
-            <div className="mt-6 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 font-body text-sm text-foreground">
+            <div className="mb-8 flex items-center gap-3 rounded-xl border border-secondary/30 bg-secondary/10 px-5 py-4 font-body text-sm text-foreground">
+              <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
               Děkujeme! Vaše odpověď byla odeslána.
             </div>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
+          <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
               <label htmlFor="firstName" className="mb-2 block font-body text-sm font-medium text-foreground">
                 Jméno
@@ -89,9 +99,9 @@ const FeedbackSection = () => {
                 autoComplete="given-name"
                 value={formData.firstName}
                 onChange={(e) => handleChange("firstName", e.target.value)}
-                className="h-11 w-full rounded-lg border border-input bg-background px-3 font-body text-foreground outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring"
+                className={inputClass}
               />
-              {errors.firstName && <p className="mt-1 font-body text-sm text-destructive">{errors.firstName}</p>}
+              {errors.firstName && <p className="mt-1.5 font-body text-sm text-destructive">{errors.firstName}</p>}
             </div>
 
             <div>
@@ -104,9 +114,9 @@ const FeedbackSection = () => {
                 autoComplete="family-name"
                 value={formData.lastName}
                 onChange={(e) => handleChange("lastName", e.target.value)}
-                className="h-11 w-full rounded-lg border border-input bg-background px-3 font-body text-foreground outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring"
+                className={inputClass}
               />
-              {errors.lastName && <p className="mt-1 font-body text-sm text-destructive">{errors.lastName}</p>}
+              {errors.lastName && <p className="mt-1.5 font-body text-sm text-destructive">{errors.lastName}</p>}
             </div>
 
             <div>
@@ -120,9 +130,9 @@ const FeedbackSection = () => {
                 autoComplete="email"
                 value={formData.email}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className="h-11 w-full rounded-lg border border-input bg-background px-3 font-body text-foreground outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring"
+                className={inputClass}
               />
-              {errors.email && <p className="mt-1 font-body text-sm text-destructive">{errors.email}</p>}
+              {errors.email && <p className="mt-1.5 font-body text-sm text-destructive">{errors.email}</p>}
             </div>
 
             <div>
@@ -136,9 +146,9 @@ const FeedbackSection = () => {
                 autoComplete="tel"
                 value={formData.phone}
                 onChange={(e) => handleChange("phone", e.target.value)}
-                className="h-11 w-full rounded-lg border border-input bg-background px-3 font-body text-foreground outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring"
+                className={inputClass}
               />
-              {errors.phone && <p className="mt-1 font-body text-sm text-destructive">{errors.phone}</p>}
+              {errors.phone && <p className="mt-1.5 font-body text-sm text-destructive">{errors.phone}</p>}
             </div>
 
             <div className="md:col-span-2">
@@ -151,16 +161,17 @@ const FeedbackSection = () => {
                 rows={5}
                 value={formData.message}
                 onChange={(e) => handleChange("message", e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 font-body text-foreground outline-none ring-offset-background transition focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 font-body text-foreground outline-none ring-offset-background transition-all duration-300 focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/30"
               />
-              {errors.message && <p className="mt-1 font-body text-sm text-destructive">{errors.message}</p>}
+              {errors.message && <p className="mt-1.5 font-body text-sm text-destructive">{errors.message}</p>}
             </div>
 
             <div className="md:col-span-2">
               <button
                 type="submit"
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 font-body text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl gradient-primary px-8 font-body text-sm font-semibold text-primary-foreground transition-all duration-300 hover:opacity-90 hover:shadow-elegant"
               >
+                <Send className="h-4 w-4" />
                 Odeslat odpověď
               </button>
             </div>

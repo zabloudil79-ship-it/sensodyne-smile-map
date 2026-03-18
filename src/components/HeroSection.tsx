@@ -3,8 +3,7 @@ import sensodyneLogo from "@/assets/sensodyne-logo.jpg";
 
 const HeroSection = () => {
   const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    el?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   const quickLinks = [
@@ -22,24 +21,32 @@ const HeroSection = () => {
         muted
         loop
         playsInline
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover scale-105"
       >
         <source src="/videos/sensodyne-hero.mp4" type="video/mp4" />
       </video>
-      <div className="absolute inset-0 bg-primary/40" />
+      <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
         <img
           src={sensodyneLogo}
           alt="Sensodyne Clinical White"
-          className="mb-6 h-16 w-auto rounded-lg bg-primary-foreground p-2 sm:h-20"
+          className="mb-8 h-16 w-auto rounded-xl bg-primary-foreground/90 backdrop-blur-sm p-2.5 sm:h-20 shadow-elegant animate-fade-in-up"
         />
-        <h1 className="max-w-4xl font-display text-3xl font-black leading-tight tracking-tight text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1
+          className="max-w-4xl font-display text-4xl font-black leading-[1.1] tracking-tight text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl animate-fade-in-up"
+          style={{ animationDelay: "0.15s" }}
+        >
           Roadshow, která se Vám
           <br />
-          podívá na zoubek
+          <span className="bg-gradient-to-r from-primary-foreground via-secondary to-primary-foreground bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_4s_linear_infinite]">
+            podívá na zoubek
+          </span>
         </h1>
-        <p className="mt-6 max-w-xl font-body text-lg text-primary-foreground/90 sm:text-xl">
+        <p
+          className="mt-6 max-w-xl font-body text-lg text-primary-foreground/85 sm:text-xl animate-fade-in-up"
+          style={{ animationDelay: "0.3s" }}
+        >
           Sensodyne Clinical White — přijďte si pro zářivý úsměv
         </p>
       </div>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { MapPin, Calendar, Clock } from "lucide-react";
 
 type MonthFilter = "all" | "duben" | "květen";
 
@@ -94,7 +95,6 @@ const allEvents: EventData[] = [
   { month: "květen", city: "Kadaň", location: "RP S1 Center", date: "24.05.2026", time: "ne (10-18)" },
 ];
 
-// Bounding box of Czech Republic (with padding)
 const CZ_BOUNDS = {
   minLat: 48.55,
   maxLat: 51.06,
@@ -102,7 +102,6 @@ const CZ_BOUNDS = {
   maxLng: 18.87,
 };
 
-// SVG viewBox dimensions
 const SVG_W = 800;
 const SVG_H = 450;
 const PAD = 30;
@@ -112,7 +111,6 @@ const lngToSvgX = (lng: number) =>
 
 const latToSvgY = (lat: number) =>
   PAD + ((CZ_BOUNDS.maxLat - lat) / (CZ_BOUNDS.maxLat - CZ_BOUNDS.minLat)) * (SVG_H - 2 * PAD);
-
 
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
@@ -144,18 +142,23 @@ const MapSection = () => {
   const selectedDetails = cityPoints.find((p) => p.city === selectedCity);
 
   return (
-    <section id="locations" className="bg-background py-20 md:py-28">
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="mb-8 text-center">
-          <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Přijeďte za námi
+    <section id="locations" className="relative bg-background py-24 md:py-32 overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/[0.03] blur-3xl -translate-y-1/2" />
+
+      <div className="container relative mx-auto max-w-6xl px-4">
+        <div className="mb-10 text-center">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold font-body mb-4">
+            40+ měst
+          </span>
+          <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-5xl">
+            Přijeďte <span className="gradient-text">za námi</span>
           </h2>
           <p className="mx-auto max-w-2xl font-body text-lg text-muted-foreground">
             Klikněte na tečku ve městě a zobrazí se lokalita, termín i čas roadshow.
           </p>
         </div>
 
-        <div className="mb-6 flex flex-wrap justify-center gap-3">
+        <div className="mb-8 flex flex-wrap justify-center gap-2">
           {([
             { key: "all", label: "Vše" },
             { key: "duben", label: "Duben" },
@@ -167,9 +170,9 @@ const MapSection = () => {
                 setFilter(item.key as MonthFilter);
                 setSelectedCity(null);
               }}
-              className={`rounded-full px-5 py-2 font-body text-sm font-semibold transition ${
+              className={`rounded-full px-6 py-2.5 font-body text-sm font-semibold transition-all duration-300 ${
                 filter === item.key
-                  ? "bg-primary text-primary-foreground"
+                  ? "gradient-primary text-primary-foreground shadow-elegant"
                   : "bg-muted text-foreground hover:bg-accent"
               }`}
             >
@@ -184,8 +187,6 @@ const MapSection = () => {
             className="w-full h-auto"
             xmlns="http://www.w3.org/2000/svg"
           >
-
-            {/* City markers */}
             {cityPoints.map((point) => {
               const isSelected = selectedCity === point.city;
               return (
@@ -194,30 +195,32 @@ const MapSection = () => {
                   onClick={() => setSelectedCity(point.city)}
                   className="cursor-pointer"
                 >
-                  {/* Hit area */}
-                  <circle cx={point.x} cy={point.y} r="12" fill="transparent" />
-                  {/* Glow ring */}
+                  <circle cx={point.x} cy={point.y} r="14" fill="transparent" />
+                  {isSelected && (
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      r="10"
+                      className="fill-primary/10"
+                    >
+                      <animate attributeName="r" from="6" to="14" dur="1.5s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite" />
+                    </circle>
+                  )}
                   <circle
                     cx={point.x}
                     cy={point.y}
-                    r={isSelected ? 8 : 6}
-                    className={isSelected ? "fill-primary/20" : "fill-primary/10"}
+                    r={isSelected ? 5 : 3.5}
+                    className={isSelected ? "fill-primary" : "fill-secondary"}
+                    style={{ transition: "r 0.3s, fill 0.3s" }}
                   />
-                  {/* Dot */}
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r={isSelected ? 4 : 3}
-                    className="fill-primary"
-                  />
-                  {/* Label */}
                   <text
                     x={point.x}
                     y={point.y - 10}
                     textAnchor="middle"
                     className="fill-foreground font-body"
-                    fontSize="9"
-                    fontWeight="600"
+                    fontSize="8.5"
+                    fontWeight={isSelected ? "700" : "500"}
                   >
                     {point.city}
                   </text>
@@ -228,24 +231,30 @@ const MapSection = () => {
         </div>
 
         {selectedDetails && (
-          <div className="mt-6 rounded-xl border border-border bg-card p-5 shadow-sm">
-            <h3 className="font-display text-xl font-bold text-foreground">
-              {selectedDetails.city}
-            </h3>
-            <div className="mt-3 space-y-3">
+          <div className="mt-8 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm p-6 shadow-elegant animate-fade-in-up" style={{ animationDuration: "0.4s" }}>
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin className="h-5 w-5 text-primary" />
+              <h3 className="font-display text-xl font-bold text-foreground">
+                {selectedDetails.city}
+              </h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
               {selectedDetails.events.map((event, index) => (
-                <div key={`${event.city}-${event.date}-${index}`} className="rounded-lg bg-muted p-3">
-                  <p className="font-body text-sm text-foreground">
-                    <span className="font-semibold">Město:</span> {event.city}
+                <div
+                  key={`${event.city}-${event.date}-${index}`}
+                  className="rounded-xl bg-muted/60 p-4 border border-border/40 transition-all duration-300 hover:shadow-card"
+                >
+                  <p className="font-body text-sm text-foreground flex items-center gap-2">
+                    <MapPin className="h-3.5 w-3.5 text-secondary" />
+                    <span className="font-semibold">{event.location}</span>
                   </p>
-                  <p className="font-body text-sm text-foreground">
-                    <span className="font-semibold">Lokalita:</span> {event.location}
+                  <p className="font-body text-sm text-muted-foreground flex items-center gap-2 mt-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-primary" />
+                    {event.date}
                   </p>
-                  <p className="font-body text-sm text-foreground">
-                    <span className="font-semibold">Termín:</span> {event.date}
-                  </p>
-                  <p className="font-body text-sm text-foreground">
-                    <span className="font-semibold">Čas:</span> {event.time}
+                  <p className="font-body text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                    <Clock className="h-3.5 w-3.5 text-primary" />
+                    {event.time}
                   </p>
                 </div>
               ))}
