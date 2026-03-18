@@ -17,6 +17,8 @@ const feedbackSchema = z.object({
     .trim()
     .min(10, "Napište nám prosím krátkou zpětnou vazbu")
     .max(1000, "Zpráva je příliš dlouhá"),
+  consentData: z.literal(true, { errorMap: () => ({ message: "Musíte souhlasit se zpracováním údajů" }) }),
+  consentMarketing: z.boolean(),
 });
 
 type FormData = z.infer<typeof feedbackSchema>;
@@ -27,6 +29,8 @@ const initialData: FormData = {
   email: "",
   phone: "",
   message: "",
+  consentData: false as unknown as true,
+  consentMarketing: false,
 };
 
 const inputClass =
@@ -37,7 +41,7 @@ const FeedbackSection = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleChange = (field: keyof FormData, value: string) => {
+  const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
     if (isSubmitted) setIsSubmitted(false);
@@ -54,6 +58,7 @@ const FeedbackSection = () => {
         email: fieldErrors.email?.[0],
         phone: fieldErrors.phone?.[0],
         message: fieldErrors.message?.[0],
+        consentData: fieldErrors.consentData?.[0],
       });
       return;
     }
@@ -164,6 +169,33 @@ const FeedbackSection = () => {
                 className="w-full rounded-xl border border-input bg-background px-4 py-3 font-body text-foreground outline-none ring-offset-background transition-all duration-300 focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary/30"
               />
               {errors.message && <p className="mt-1.5 font-body text-sm text-destructive">{errors.message}</p>}
+            </div>
+
+            <div className="md:col-span-2 space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={formData.consentData === true}
+                  onChange={(e) => handleChange("consentData", e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+                />
+                <span className="font-body text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  Souhlasím se zpracováním osobních údajů <span className="text-destructive">*</span>
+                </span>
+              </label>
+              {errors.consentData && <p className="ml-7 font-body text-sm text-destructive">{errors.consentData}</p>}
+
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={formData.consentMarketing}
+                  onChange={(e) => handleChange("consentMarketing", e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+                />
+                <span className="font-body text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  Souhlasím se zasíláním výhodných nabídek
+                </span>
+              </label>
             </div>
 
             <div className="md:col-span-2 flex justify-center">
