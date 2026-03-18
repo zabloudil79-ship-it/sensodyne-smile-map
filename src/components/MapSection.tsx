@@ -108,9 +108,17 @@ const mercatorY = (lat: number) => {
   return Math.log(Math.tan(Math.PI / 4 + rad / 2));
 };
 
+const DEFAULT_CENTER = { lat: 49.8175, lng: 15.473 };
+const DEFAULT_ZOOM = 7;
+
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [center, setCenter] = useState(DEFAULT_CENTER);
+
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 1, 12));
+  const handleZoomOut = () => setZoom((z) => Math.max(z - 1, 6));
 
   const filteredEvents = useMemo(
     () => allEvents.filter((event) => (filter === "all" ? true : event.month === filter)),
@@ -124,21 +132,28 @@ const MapSection = () => {
       return acc;
     }, {});
 
-    const maxLatMerc = mercatorY(CR_BOUNDS.maxLat);
-    const minLatMerc = mercatorY(CR_BOUNDS.minLat);
+    const scale = Math.pow(2, zoom - DEFAULT_ZOOM);
+    const lngSpan = (CR_BOUNDS.maxLng - CR_BOUNDS.minLng) / scale;
+    const latSpan = (CR_BOUNDS.maxLat - CR_BOUNDS.minLat) / scale;
+    const visMinLng = center.lng - lngSpan / 2;
+    const visMaxLng = center.lng + lngSpan / 2;
+    const visMinLatMerc = mercatorY(center.lat - latSpan / 2);
+    const visMaxLatMerc = mercatorY(center.lat + latSpan / 2);
 
     return Object.entries(grouped)
       .map(([city, events]) => {
         const coords = cityCoordinates[city];
         if (!coords) return null;
 
-        const x = clamp(((coords.lng - CR_BOUNDS.minLng) / (CR_BOUNDS.maxLng - CR_BOUNDS.minLng)) * 100, 1.5, 98.5);
-        const y = clamp(((maxLatMerc - mercatorY(coords.lat)) / (maxLatMerc - minLatMerc)) * 100, 2, 98);
+        const x = ((coords.lng - visMinLng) / (visMaxLng - visMinLng)) * 100;
+        const y = ((visMaxLatMerc - mercatorY(coords.lat)) / (visMaxLatMerc - visMinLatMerc)) * 100;
 
-        return { city, events, x, y };
+        if (x < -5 || x > 105 || y < -5 || y > 105) return null;
+
+        return { city, events, x: clamp(x, 0, 100), y: clamp(y, 0, 100) };
       })
       .filter((point): point is NonNullable<typeof point> => point !== null);
-  }, [filteredEvents]);
+  }, [filteredEvents, zoom, center]);
 
   const selectedDetails = cityPoints.find((point) => point.city === selectedCity);
 
@@ -181,8 +196,26 @@ const MapSection = () => {
             loading="lazy"
             className="absolute inset-0"
             style={{ border: 0 }}
-            src="https://maps.google.com/maps?hl=cs&ll=49.8175,15.4730&z=7&t=m&output=embed"
+            src={`https://maps.google.com/maps?hl=cs&ll=${center.lat},${center.lng}&z=${zoom}&t=m&output=embed`}
           />
+
+          {/* Zoom controls */}
+          <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
+            <button
+              onClick={handleZoomIn}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
+              aria-label="Přiblížit"
+            >
+              +
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 font-bold text-foreground shadow-md backdrop-blur-sm transition hover:bg-background"
+              aria-label="Oddálit"
+            >
+              −
+            </button>
+          </div>
 
           <div className="absolute inset-0 pointer-events-none">
             {cityPoints.map((point) => (
