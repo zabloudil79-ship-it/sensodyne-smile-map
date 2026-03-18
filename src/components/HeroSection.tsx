@@ -1,17 +1,20 @@
 import { ChevronDown } from "lucide-react";
 import sensodyneLogo from "@/assets/sensodyne-logo.jpg";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const HeroSection = () => {
+  const { lang, t } = useLanguage();
+
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   const quickLinks = [
-    { id: "about", label: "Road Show" },
-    { id: "locations", label: "Naše místa" },
-    { id: "gallery", label: "Galerie" },
-    { id: "products", label: "Další produkty" },
-    { id: "feedback", label: "Podělte se o názor" },
+    { id: "about", label: t.hero.quickLinks.about[lang] },
+    { id: "locations", label: t.hero.quickLinks.locations[lang] },
+    { id: "gallery", label: t.hero.quickLinks.gallery[lang] },
+    { id: "products", label: t.hero.quickLinks.products[lang] },
+    { id: "feedback", label: t.hero.quickLinks.feedback[lang] },
   ];
 
   return (
@@ -37,17 +40,17 @@ const HeroSection = () => {
           className="max-w-4xl font-display text-4xl font-black leading-[1.1] tracking-tight text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl animate-fade-in-up"
           style={{ animationDelay: "0.15s" }}
         >
-          Roadshow, která se Vám
+          {t.hero.title1[lang]}
           <br />
           <span className="bg-gradient-to-r from-primary-foreground via-secondary to-primary-foreground bg-clip-text text-transparent bg-[length:200%_auto] animate-[shimmer_4s_linear_infinite]">
-            podívá na zoubek
+            {t.hero.title2[lang]}
           </span>
         </h1>
         <p
           className="mt-6 max-w-xl font-body text-lg text-primary-foreground/85 sm:text-xl animate-fade-in-up"
           style={{ animationDelay: "0.3s" }}
         >
-          Sensodyne Clinical White — přijďte si pro zářivý úsměv
+          {t.hero.subtitle[lang]}
         </p>
       </div>
 
@@ -74,7 +77,7 @@ const HeroSection = () => {
         className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 flex flex-col items-center gap-1 text-primary-foreground/80 transition-colors hover:text-primary-foreground"
         aria-label="Scroll down"
       >
-        <span className="text-sm font-body tracking-widest uppercase">Objevte více</span>
+        <span className="text-sm font-body tracking-widest uppercase">{t.hero.scrollDown[lang]}</span>
         <ChevronDown className="h-6 w-6 animate-scroll-indicator" />
       </button>
     </section>

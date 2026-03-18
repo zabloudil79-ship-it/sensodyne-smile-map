@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { MapPin, Calendar, Clock } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type MonthFilter = "all" | "duben" | "květen";
 
@@ -95,26 +96,26 @@ const allEvents: EventData[] = [
   { month: "květen", city: "Kadaň", location: "RP S1 Center", date: "24.05.2026", time: "ne (10-18)" },
 ];
 
-const CZ_BOUNDS = {
-  minLat: 48.55,
-  maxLat: 51.06,
-  minLng: 12.09,
-  maxLng: 18.87,
-};
-
+const CZ_BOUNDS = { minLat: 48.55, maxLat: 51.06, minLng: 12.09, maxLng: 18.87 };
 const SVG_W = 800;
 const SVG_H = 450;
 const PAD = 30;
 
 const lngToSvgX = (lng: number) =>
   PAD + ((lng - CZ_BOUNDS.minLng) / (CZ_BOUNDS.maxLng - CZ_BOUNDS.minLng)) * (SVG_W - 2 * PAD);
-
 const latToSvgY = (lat: number) =>
   PAD + ((CZ_BOUNDS.maxLat - lat) / (CZ_BOUNDS.maxLat - CZ_BOUNDS.minLat)) * (SVG_H - 2 * PAD);
 
 const MapSection = () => {
   const [filter, setFilter] = useState<MonthFilter>("all");
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const { lang, t } = useLanguage();
+
+  const filterButtons = [
+    { key: "all" as MonthFilter, label: t.map.filterAll[lang] },
+    { key: "duben" as MonthFilter, label: t.map.filterApril[lang] },
+    { key: "květen" as MonthFilter, label: t.map.filterMay[lang] },
+  ];
 
   const filteredEvents = useMemo(
     () => allEvents.filter((event) => (filter === "all" ? true : event.month === filter)),
@@ -148,26 +149,22 @@ const MapSection = () => {
       <div className="container relative mx-auto max-w-6xl px-4">
         <div className="mb-10 text-center">
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold font-body mb-4">
-            40+ měst
+            {t.map.badge[lang]}
           </span>
           <h2 className="mb-4 font-display text-3xl font-bold text-foreground md:text-5xl">
-            Přijeďte <span className="gradient-text">za námi</span>
+            {t.map.title1[lang]} <span className="gradient-text">{t.map.title2[lang]}</span>
           </h2>
           <p className="mx-auto max-w-2xl font-body text-lg text-muted-foreground">
-            Klikněte na tečku ve městě a zobrazí se lokalita, termín i čas roadshow.
+            {t.map.subtitle[lang]}
           </p>
         </div>
 
         <div className="mb-8 flex flex-wrap justify-center gap-2">
-          {([
-            { key: "all", label: "Vše" },
-            { key: "duben", label: "Duben" },
-            { key: "květen", label: "Květen" },
-          ] as const).map((item) => (
+          {filterButtons.map((item) => (
             <button
               key={item.key}
               onClick={() => {
-                setFilter(item.key as MonthFilter);
+                setFilter(item.key);
                 setSelectedCity(null);
               }}
               className={`rounded-full px-6 py-2.5 font-body text-sm font-semibold transition-all duration-300 ${
@@ -182,27 +179,14 @@ const MapSection = () => {
         </div>
 
         <div className="relative mx-auto w-full max-w-4xl">
-          <svg
-            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-            className="w-full h-auto"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
             {cityPoints.map((point) => {
               const isSelected = selectedCity === point.city;
               return (
-                <g
-                  key={point.city}
-                  onClick={() => setSelectedCity(point.city)}
-                  className="cursor-pointer"
-                >
+                <g key={point.city} onClick={() => setSelectedCity(point.city)} className="cursor-pointer">
                   <circle cx={point.x} cy={point.y} r="14" fill="transparent" />
                   {isSelected && (
-                    <circle
-                      cx={point.x}
-                      cy={point.y}
-                      r="10"
-                      className="fill-primary/10"
-                    >
+                    <circle cx={point.x} cy={point.y} r="10" className="fill-primary/10">
                       <animate attributeName="r" from="6" to="14" dur="1.5s" repeatCount="indefinite" />
                       <animate attributeName="opacity" from="0.4" to="0" dur="1.5s" repeatCount="indefinite" />
                     </circle>
@@ -234,9 +218,7 @@ const MapSection = () => {
           <div className="mt-8 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm p-6 shadow-elegant animate-fade-in-up" style={{ animationDuration: "0.4s" }}>
             <div className="flex items-center gap-2 mb-4">
               <MapPin className="h-5 w-5 text-primary" />
-              <h3 className="font-display text-xl font-bold text-foreground">
-                {selectedDetails.city}
-              </h3>
+              <h3 className="font-display text-xl font-bold text-foreground">{selectedDetails.city}</h3>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {selectedDetails.events.map((event, index) => (

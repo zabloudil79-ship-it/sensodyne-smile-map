@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import sensodyneLogo from "@/assets/sensodyne-logo.jpg";
-
-const navLinks = [
-  { id: "about", label: "O roadshow" },
-  { id: "locations", label: "Místa" },
-  { id: "gallery", label: "Galerie" },
-  { id: "products", label: "Produkty" },
-  { id: "feedback", label: "Kontakt" },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const StickyNav = () => {
   const [scrolled, setScrolled] = useState(false);
+  const { lang, setLang, t } = useLanguage();
+
+  const navLinks = [
+    { id: "about", label: t.nav.about[lang] },
+    { id: "locations", label: t.nav.locations[lang] },
+    { id: "gallery", label: t.nav.gallery[lang] },
+    { id: "products", label: t.nav.products[lang] },
+    { id: "feedback", label: t.nav.feedback[lang] },
+  ];
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 80);
@@ -53,6 +55,64 @@ const StickyNav = () => {
               {link.label}
             </button>
           ))}
+
+          {/* Language switcher */}
+          <div className={`ml-3 flex items-center rounded-full border transition-all duration-300 ${
+            scrolled ? "border-border" : "border-primary-foreground/30"
+          }`}>
+            <button
+              onClick={() => setLang("cs")}
+              className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
+                lang === "cs"
+                  ? scrolled
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-primary-foreground text-foreground"
+                  : scrolled
+                    ? "text-muted-foreground hover:text-foreground"
+                    : "text-primary-foreground/60 hover:text-primary-foreground"
+              }`}
+            >
+              CZ
+            </button>
+            <button
+              onClick={() => setLang("en")}
+              className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
+                lang === "en"
+                  ? scrolled
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-primary-foreground text-foreground"
+                  : scrolled
+                    ? "text-muted-foreground hover:text-foreground"
+                    : "text-primary-foreground/60 hover:text-primary-foreground"
+              }`}
+            >
+              EN
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile language switcher */}
+        <div className="flex md:hidden items-center rounded-full border transition-all duration-300 border-primary-foreground/30">
+          <button
+            onClick={() => setLang("cs")}
+            className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
+              lang === "cs"
+                ? scrolled ? "bg-primary text-primary-foreground" : "bg-primary-foreground text-foreground"
+                : scrolled ? "text-muted-foreground" : "text-primary-foreground/60"
+            }`}
+          >
+            CZ
+          </button>
+          <button
+            onClick={() => setLang("en")}
+            className={`px-2.5 py-1 rounded-full font-body text-xs font-bold tracking-wide transition-all duration-300 ${
+              lang === "en"
+                ? scrolled ? "bg-primary text-primary-foreground" : "bg-primary-foreground text-foreground"
+                : scrolled ? "text-muted-foreground" : "text-primary-foreground/60"
+            }`}
+          >
+            EN
+          </button>
         </div>
       </div>
     </nav>
