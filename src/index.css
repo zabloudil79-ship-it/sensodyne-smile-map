@@ -24,7 +24,7 @@
     --muted: 220 14% 96%;
     --muted-foreground: 220 9% 46%;
 
-    --accent: 220 14% 96%;
+    --accent: 220 30% 94%;
     --accent-foreground: 220 26% 14%;
 
     --destructive: 0 84% 60%;
@@ -47,6 +47,13 @@
 
     --font-display: 'Inter', sans-serif;
     --font-body: 'Public Sans', sans-serif;
+
+    --gradient-primary: linear-gradient(135deg, hsl(220 100% 32%), hsl(197 100% 44%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 100% 20% / 0.7), hsl(197 100% 30% / 0.5));
+    --gradient-section: linear-gradient(180deg, hsl(220 30% 97%), hsl(220 20% 94%));
+    --shadow-elegant: 0 10px 40px -10px hsl(220 100% 32% / 0.15);
+    --shadow-card: 0 4px 24px -4px hsl(220 26% 14% / 0.08);
+    --shadow-card-hover: 0 12px 40px -8px hsl(220 100% 32% / 0.18);
   }
 }
 
@@ -72,6 +79,24 @@
   .font-body {
     font-family: var(--font-body);
   }
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
 }
 
 @keyframes fade-in-up {
@@ -96,10 +121,45 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(220 100% 32% / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px 6px hsl(220 100% 32% / 0.1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .animate-fade-in-up {
   animation: fade-in-up 0.8s ease-out forwards;
 }
 
 .animate-scroll-indicator {
   animation: scroll-indicator 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
 }
