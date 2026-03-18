@@ -7,6 +7,14 @@ const HeroSection = () => {
     el?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const quickLinks = [
+    { id: "about", label: "Road Show" },
+    { id: "locations", label: "Naše místa" },
+    { id: "gallery", label: "Galerie" },
+    { id: "products", label: "Další produkty" },
+    { id: "feedback", label: "Podělte se o názor" },
+  ];
+
   return (
     <section className="relative h-screen w-full overflow-hidden">
       <video
@@ -36,37 +44,22 @@ const HeroSection = () => {
         </p>
       </div>
 
-      <div className="absolute bottom-20 left-1/2 z-10 flex w-[92%] max-w-4xl -translate-x-1/2 flex-wrap items-center justify-center gap-2 sm:gap-3">
-        <button
-          onClick={() => scrollToSection("about")}
-          className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
-        >
-          Road Show
-        </button>
-        <button
-          onClick={() => scrollToSection("locations")}
-          className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
-        >
-          Naše místa
-        </button>
-        <button
-          onClick={() => scrollToSection("gallery")}
-          className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
-        >
-          Galerie
-        </button>
-        <button
-          onClick={() => scrollToSection("products")}
-          className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
-        >
-          Další produkty
-        </button>
-        <button
-          onClick={() => scrollToSection("feedback")}
-          className="rounded-full bg-background/85 px-4 py-2 font-body text-xs font-semibold uppercase tracking-wide text-foreground transition hover:bg-background"
-        >
-          Podělte se o názor
-        </button>
+      <div className="absolute bottom-20 left-1/2 z-10 w-[92%] max-w-5xl -translate-x-1/2">
+        <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-center sm:grid-cols-3 lg:grid-cols-5">
+          {quickLinks.map((link, index) => (
+            <div key={link.id} className="flex items-center justify-center lg:justify-center">
+              <button
+                onClick={() => scrollToSection(link.id)}
+                className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/95 transition hover:text-primary-foreground"
+              >
+                {link.label}
+              </button>
+              {index < quickLinks.length - 1 && (
+                <span className="ml-2 hidden font-body text-primary-foreground/70 lg:inline">,</span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       <button
