@@ -95,10 +95,17 @@ const allEvents: EventData[] = [
 ];
 
 const CR_BOUNDS = {
-  minLat: 48.5,
-  maxLat: 51.1,
-  minLng: 12.0,
-  maxLng: 18.9,
+  minLat: 48.52,
+  maxLat: 51.06,
+  minLng: 12.09,
+  maxLng: 18.89,
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const mercatorY = (lat: number) => {
+  const rad = (lat * Math.PI) / 180;
+  return Math.log(Math.tan(Math.PI / 4 + rad / 2));
 };
 
 const MapSection = () => {
@@ -117,13 +124,16 @@ const MapSection = () => {
       return acc;
     }, {});
 
+    const maxLatMerc = mercatorY(CR_BOUNDS.maxLat);
+    const minLatMerc = mercatorY(CR_BOUNDS.minLat);
+
     return Object.entries(grouped)
       .map(([city, events]) => {
         const coords = cityCoordinates[city];
         if (!coords) return null;
 
-        const x = ((coords.lng - CR_BOUNDS.minLng) / (CR_BOUNDS.maxLng - CR_BOUNDS.minLng)) * 100;
-        const y = ((CR_BOUNDS.maxLat - coords.lat) / (CR_BOUNDS.maxLat - CR_BOUNDS.minLat)) * 100;
+        const x = clamp(((coords.lng - CR_BOUNDS.minLng) / (CR_BOUNDS.maxLng - CR_BOUNDS.minLng)) * 100, 1.5, 98.5);
+        const y = clamp(((maxLatMerc - mercatorY(coords.lat)) / (maxLatMerc - minLatMerc)) * 100, 2, 98);
 
         return { city, events, x, y };
       })
@@ -171,15 +181,15 @@ const MapSection = () => {
             loading="lazy"
             className="absolute inset-0"
             style={{ border: 0 }}
-            src="https://maps.google.com/maps?q=Czech%20Republic&t=&z=7&ie=UTF8&iwloc=&output=embed"
+            src="https://maps.google.com/maps?hl=cs&ll=49.8175,15.4730&z=7&t=m&output=embed"
           />
 
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 pointer-events-none">
             {cityPoints.map((point) => (
               <button
                 key={point.city}
                 onClick={() => setSelectedCity(point.city)}
-                className="absolute -translate-x-1/2 -translate-y-1/2"
+                className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                 style={{ left: `${point.x}%`, top: `${point.y}%` }}
                 aria-label={`Zobrazit detail pro město ${point.city}`}
               >
@@ -198,10 +208,18 @@ const MapSection = () => {
             <div className="mt-3 space-y-3">
               {selectedDetails.events.map((event, index) => (
                 <div key={`${event.city}-${event.date}-${index}`} className="rounded-lg bg-muted p-3">
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Město:</span> {event.city}</p>
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Lokalita:</span> {event.location}</p>
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Termín:</span> {event.date}</p>
-                  <p className="font-body text-sm text-foreground"><span className="font-semibold">Čas:</span> {event.time}</p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Město:</span> {event.city}
+                  </p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Lokalita:</span> {event.location}
+                  </p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Termín:</span> {event.date}
+                  </p>
+                  <p className="font-body text-sm text-foreground">
+                    <span className="font-semibold">Čas:</span> {event.time}
+                  </p>
                 </div>
               ))}
             </div>
